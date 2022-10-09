@@ -149,7 +149,6 @@ public class Program
         while (3 < 4)
         {
             PingReply reply = pingSender.Send(host);
-            Console.Clear();
 
             //Promedio
             sum = 0;          
@@ -190,6 +189,7 @@ public class Program
                 color = ConsoleColor.Red;
                 
             Console.ForegroundColor = color;
+            Console.SetCursorPosition(0,0);
             Console.Write(String.Format("{0,7}ms", prom));
         
             //Tiempo Transcurrido
@@ -238,6 +238,15 @@ public class Program
             else
                 query.Add(-1);
 
+            //Limpiar buffer
+            for (int k = 0; k < 5; k++)
+            {
+                Console.SetCursorPosition(10,2+k);
+                Console.Write("                                                          ");
+            }
+
+            //Imprimir
+            Console.SetCursorPosition(0,2);
             foreach (long data in query)
             {
                 if (data != -1)
