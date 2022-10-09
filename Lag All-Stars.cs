@@ -106,7 +106,7 @@ public class Program
 
             if (time[1] == 59)
             {
-                time[1] = -1;
+                time[1] = 0;
                 time[2]++;
             }
 
