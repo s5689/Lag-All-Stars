@@ -117,9 +117,11 @@ public class Program
 
     static void Main(String[] args)
     {
+        //Setup
         MoveConsole window = new MoveConsole();
         window.move();
 
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
         Console.CursorVisible = false;
         Console.WindowHeight = 8;
         Console.BufferHeight = 8;
@@ -139,13 +141,25 @@ public class Program
         long step = 0;
         long sum = 0;
         long prom = 0;
+
+        int signal = 60;
+        String[] loading = {"▀ ", " ▀", " ▄", "▄ "};
+        int loadCount = 0;
         
         char txt = '0';
         ConsoleColor color = ConsoleColor.White;
-        
-        Ping pingSender = new Ping();
-        string host = args[0];
 
+        //Asignar IP
+        Ping pingSender = new Ping();
+        string host;
+
+        if (args.Length == 0)
+            host = "8.8.8.8";
+        
+        else
+            host = args[0];
+
+        //App
         while (3 < 4)
         {
             PingReply reply = pingSender.Send(host);
@@ -190,46 +204,106 @@ public class Program
                 
             Console.ForegroundColor = color;
             Console.SetCursorPosition(0,0);
-            Console.Write(String.Format("{0,7}ms", prom));
+            Console.Write(String.Format("{0,4}ms", prom));
         
             //Tiempo Transcurrido
             Console.ResetColor();
             Console.Write(String.Format("│ {0,2}:{1,2}:{2,2} │", app.time[2], app.time[1], app.time[0]));
 
             //Estadisticas
-            Console.Write(String.Format(" {0,6} │ {1,6} │ {2,6} │ {3,6} │", stat[0], stat[1], stat[2], stat[3]));
+            Console.SetCursorPosition(17,0);
+            Console.Write(String.Format("│ {0,6} │ {1,6} │ {2,6} │ {3,6} ", stat[0], stat[1], stat[2], stat[3]));
 
-            Console.SetCursorPosition(22,0);
+            Console.SetCursorPosition(19,0);
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("▓▓");
             Console.ResetColor();
             Console.Write(": ");
 
-            Console.SetCursorPosition(31,0);
+            Console.SetCursorPosition(28,0);
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.Write("▒▒");
             Console.ResetColor();
             Console.Write(": ");
 
-            Console.SetCursorPosition(40,0);
+            Console.SetCursorPosition(37,0);
             Console.ForegroundColor = ConsoleColor.Red;
             Console.Write("░░");
             Console.ResetColor();
             Console.Write(": ");
 
-            Console.SetCursorPosition(49,0);
+            Console.SetCursorPosition(46,0);
             Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.Write("▬ ");
             Console.ResetColor();
             Console.Write(": ");
 
+            //Signal Level
+            Console.SetCursorPosition(53,0);
+            Console.ResetColor();
+            Console.Write("│ ╒");
+
+            if (step < 60)
+            {
+                Console.Write(" {0} ", loading[loadCount]);
+
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.Write(String.Format("{0,2}%", (step*100)/60));
+
+                Console.ResetColor();
+                Console.Write("|");
+
+                loadCount++;
+
+                if (loadCount == 4)
+                    loadCount = 0;
+            }
+
+            else
+            {
+                signal -= Convert.ToInt32(stat[1]*0.5);
+                signal -= stat[2];
+                signal -= stat[3]*2;
+
+                if (signal >= 0)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write("_");
+
+                    if (signal >= 20)
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Console.Write("▄");
+                        
+                        if (signal >= 40)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.Write("█");
+                        } 
+
+                        else 
+                            Console.Write(" ");
+                    }
+                    
+                    else 
+                        Console.Write("  ");
+                }
+
+                else
+                    Console.Write("   ");
+
+                Console.ResetColor();
+                Console.Write(String.Format("{0,3}%│", (signal*100)/60));
+            }
+
             stat[0] = 0;
             stat[1] = 0;
             stat[2] = 0;
             stat[3] = 0;
+            signal = 60;
 
             Console.SetCursorPosition(0,1);
-            Console.WriteLine("─────────┼──────────┴────────┴────────┴────────┴────────┘");
+            Console.WriteLine("──────┼──────────┴────────┴────────┴────────┴────────┴─────────┘");
             
             //Pings
             if (reply.Status == IPStatus.Success)
@@ -241,7 +315,7 @@ public class Program
             //Limpiar buffer
             for (int k = 0; k < 5; k++)
             {
-                Console.SetCursorPosition(10,2+k);
+                Console.SetCursorPosition(7,2+k);
                 Console.Write("                                                          ");
             }
 
@@ -270,7 +344,7 @@ public class Program
                     }
                     
                     Console.ForegroundColor = color;
-                    Console.Write(String.Format("{0,7}ms", data));
+                    Console.Write(String.Format("{0,4}ms", data));
                     
                     Console.ResetColor();
                     Console.Write("│");
@@ -290,7 +364,7 @@ public class Program
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.DarkGray;
-                    Console.Write(String.Format("{0,9}", "▬ "));
+                    Console.Write(String.Format("{0,6}", "▬ "));
 
                     Console.ResetColor();
                     Console.Write("│ ");
