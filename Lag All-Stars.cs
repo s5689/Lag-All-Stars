@@ -277,9 +277,18 @@ public class Program
                         
                         if (signal >= 40)
                         {
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            Console.Write("█");
-                        } 
+                            if (signal >= 50)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Green;
+                                Console.Write("█");
+                            }
+                            
+                            else
+                            {
+                                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                                Console.Write("▌");
+                            }
+                        }
 
                         else 
                             Console.Write(" ");
