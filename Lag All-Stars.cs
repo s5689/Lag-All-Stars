@@ -92,32 +92,8 @@ public class MoveConsole
 
 public class Program
 {
-    public int[] time = {0, 0, 0};
-
-    public void startTime()
-    {
-        while (3 < 4)
-        {
-            if (time[0] == 59)
-            {
-                time[0] = -1;
-                time[1]++;
-            }
-
-            if (time[1] == 59)
-            {
-                time[1] = 0;
-                time[2]++;
-            }
-
-            time[0]++;
-            Thread.Sleep(1000);
-        }
-    }
-
-    static void Main(String[] args)
-    {
-        //Setup
+    static void Main(String[] args) {
+        // Setup
         MoveConsole window = new MoveConsole();
         window.move();
 
@@ -128,28 +104,26 @@ public class Program
         Console.WindowWidth = 68;
         Console.BufferWidth = 68;
         Console.Title = "Lag All-Stars";
-
-        Program app = new Program();
-        var tiempo = new Thread(app.startTime);
-
-        tiempo.Start();
         
-        List<long> query = new List<long>();
         List<long> lastMin = new List<long>();
+        List<long> query = new List<long>();
 
+        String[] time = {"0", "0", "0"};
+        int[] _time = {0, 0, 0};
         int[] stat = {0, 0, 0, 0};
         long step = 0;
         long sum = 0;
         long prom = 0;
+        bool renderDone = false;
 
-        int signal = 60;
         String[] loading = {"▀ ", " ▀", " ▄", "▄ "};
         int loadCount = 0;
+        int signal = 60;
         
         char txt = '0';
         ConsoleColor color = ConsoleColor.White;
 
-        //Asignar IP
+        // Asignar IP
         Ping pingSender = new Ping();
         string host;
 
@@ -159,12 +133,11 @@ public class Program
         else
             host = args[0];
 
-        //App
-        while (3 < 4)
-        {
-            PingReply reply = pingSender.Send(host);
+        PingReply reply = pingSender.Send(host, 1000);
 
-            //Promedio
+        // App
+        while (true) {
+            // Promedio
             sum = 0;          
             if (step < 60)
                 step++;
@@ -174,11 +147,10 @@ public class Program
 
             lastMin.Add(reply.RoundtripTime);
 
-            foreach (long data in lastMin)
-            {
+            foreach (long data in lastMin) {
                 sum += data;
                 
-                if (data < 100)
+                if (data < 100 && data != 0)
                     stat[0]++;
 
                 if (data >= 100 && data < 200)
@@ -206,11 +178,37 @@ public class Program
             Console.SetCursorPosition(0,0);
             Console.Write(String.Format("{0,4}ms", prom));
         
-            //Tiempo Transcurrido
-            Console.ResetColor();
-            Console.Write(String.Format("│ {0,2}:{1,2}:{2,2} │", app.time[2], app.time[1], app.time[0]));
+            // Tiempo Transcurrido
+            if (_time[0] == 59) {
+                _time[0] = -1;
+                _time[1]++;
+            }
 
-            //Estadisticas
+            if (_time[1] == 59) {
+                _time[1] = 0;
+                _time[2]++;
+            }
+
+            _time[0]++;
+
+            // Mostrar cero a la izquierda al estar los valores por debajo de 10
+            time[0] = _time[0].ToString();
+            time[1] = _time[1].ToString();
+            time[2] = _time[2].ToString();
+
+            if (_time[0] < 10)
+                time[0] = "0" + time[0];
+
+            if (_time[1] < 10)
+                time[1] = "0" + time[1];
+                
+            if (_time[2] < 10)
+                time[2] = "0" + time[2];
+
+            Console.ResetColor();
+            Console.Write(String.Format("│ {0,2}:{1,2}:{2,2} │", time[2], time[1], time[0]));
+
+            // Estadisticas
             Console.SetCursorPosition(17,0);
             Console.Write(String.Format("│ {0,6} │ {1,6} │ {2,6} │ {3,6} ", stat[0], stat[1], stat[2], stat[3]));
 
@@ -238,13 +236,23 @@ public class Program
             Console.ResetColor();
             Console.Write(": ");
 
-            //Signal Level
+            // Signal Level
             Console.SetCursorPosition(53,0);
             Console.ResetColor();
             Console.Write("│ ╒");
 
-            if (step < 60)
-            {
+            // Reiniciar Estadisticas si la señal de la red baja de 0%
+            signal -= Convert.ToInt32(stat[1]*0.5);
+            signal -= stat[2];
+            signal -= stat[3]*2;
+            
+            if ((signal*100)/step < 0) {
+                step = 0;
+                lastMin.Clear();
+            }
+
+            // Renderizar o no segun los paquetes capturados
+            if (step < 60) {
                 Console.Write(" {0} ", loading[loadCount]);
 
                 Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -257,54 +265,34 @@ public class Program
 
                 if (loadCount == 4)
                     loadCount = 0;
-            }
 
-            else
-            {
-                signal -= Convert.ToInt32(stat[1]*0.5);
-                signal -= stat[2];
-                signal -= stat[3]*2;
-
-                if (signal >= 0)
-                {
+            } else {
+                if (signal >= 0) {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.Write("_");
 
-                    if (signal >= 20)
-                    {
+                    if (signal >= 20) {
                         Console.ForegroundColor = ConsoleColor.DarkYellow;
                         Console.Write("▄");
                         
-                        if (signal >= 40)
-                        {
-                            if (signal >= 50)
-                            {
+                        if (signal >= 40) {
+                            if (signal >= 50) {
                                 Console.ForegroundColor = ConsoleColor.Green;
                                 Console.Write("█");
-                            }
                             
-                            else
-                            {
+                            } else {
                                 Console.ForegroundColor = ConsoleColor.DarkGreen;
                                 Console.Write("▌");
                             }
-                        }
-
-                        else 
-                            Console.Write(" ");
-                    }
-                    
-                    else 
-                        Console.Write("  ");
-                }
-
-                else
-                    Console.Write("   ");
+                        } else Console.Write(" ");
+                    } else Console.Write("  ");
+                } else Console.Write("   ");
 
                 Console.ResetColor();
                 Console.Write(String.Format("{0,3}%│", (signal*100)/60));
             }
 
+            // Reiniciar todas las estadisticas para el proximo renderizado
             stat[0] = 0;
             stat[1] = 0;
             stat[2] = 0;
@@ -314,40 +302,34 @@ public class Program
             Console.SetCursorPosition(0,1);
             Console.WriteLine("──────┼──────────┴────────┴────────┴────────┴────────┴─────────┘");
             
-            //Pings
+            // Pings
             if (reply.Status == IPStatus.Success)
                 query.Add(reply.RoundtripTime);
             
             else
                 query.Add(-1);
 
-            //Limpiar buffer
-            for (int k = 0; k < 5; k++)
-            {
+            // Limpiar buffer
+            for (int k = 0; k < 5; k++) {
                 Console.SetCursorPosition(7,2+k);
                 Console.Write("                                                          ");
             }
 
-            //Imprimir
+            // Imprimir
             Console.SetCursorPosition(0,2);
-            foreach (long data in query)
-            {
-                if (data != -1)
-                {
-                    if (data < 100)
-                    {
+            foreach (long data in query) {
+                if (data != -1) {
+                    if (data < 100) {
                         color = ConsoleColor.Green;
                         txt = '▓';
                     }
 
-                    if (data >= 100 && data < 200)
-                    {
+                    if (data >= 100 && data < 200) {
                         color = ConsoleColor.DarkYellow;
                         txt = '▒';
                     }
 
-                    if (data > 200)
-                    {
+                    if (data > 200) {
                         color = ConsoleColor.Red;
                         txt = '░';
                     }
@@ -359,8 +341,7 @@ public class Program
                     Console.Write("│");
 
                     Console.ForegroundColor = color;
-                    for (int k = 0; k < data / 10; k++)
-                    {
+                    for (int k = 0; k < data / 10; k++) {
                         Console.Write(txt);
 
                         if (k > 54)
@@ -368,10 +349,8 @@ public class Program
                     }
                     
                     Console.WriteLine();
-                }
-
-                else
-                {
+                
+                } else {
                     Console.ForegroundColor = ConsoleColor.DarkGray;
                     Console.Write(String.Format("{0,6}", "▬ "));
 
@@ -384,9 +363,15 @@ public class Program
             }
 
             if (step > 4)
-                query.RemoveAt(0);
+                renderDone = true;
 
-            if (reply.RoundtripTime < 1000 && reply.Status == IPStatus.Success)
+            if (renderDone)
+                query.RemoveAt(0);
+            
+            // Siguiente Ping + Tiempo de espera
+            reply = pingSender.Send(host, 1000);
+
+            if (reply.Status == IPStatus.Success)
                 Thread.Sleep(Convert.ToInt32(1000-reply.RoundtripTime));
         }
     }
