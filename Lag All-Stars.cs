@@ -369,7 +369,13 @@ public class Program
                 query.RemoveAt(0);
             
             // Siguiente Ping + Tiempo de espera
-            reply = pingSender.Send(host, 1000);
+            try
+            {
+                reply = pingSender.Send(host, 1000);
+            }
+            catch (System.Exception)
+            {                
+            }
 
             if (reply.Status == IPStatus.Success)
                 Thread.Sleep(Convert.ToInt32(1000-reply.RoundtripTime));
